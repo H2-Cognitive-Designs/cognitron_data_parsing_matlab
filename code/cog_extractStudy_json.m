@@ -207,7 +207,6 @@ end
                 'os',...
                 'device',...
                 'browser',...
-                'battery_id',...
                 'task_id',...
                 'user_id',...
                 'user_code',...
@@ -475,9 +474,12 @@ end
                             if isfield(thisQ,'Q0')
                                 thisQs = fieldnames(thisQ);
                                 qDataType = 'old';
-                            else
+                            elseif isfield(thisQ,'questions')
                                 thisQs = fieldnames(thisQ.questions);
                                 qDataType = 'new';
+                            else
+                                thisQs = fieldnames(thisQ);
+                                qDataType = 'adaptive';
                             end
 
                             % Look through the question texts and replace
@@ -515,7 +517,7 @@ end
                                 thisQTs = {};
                                 for p=1:length(thisQs)
                             
-                                    if strcmp(qDataType,'old')
+                                    if strcmp(qDataType,'old') || strcmp(qDataType,'adaptive')
                                         thisQTs{p} = thisQ.(thisQs{p}).Q;
 
                                         for r=1:length(rVars)
