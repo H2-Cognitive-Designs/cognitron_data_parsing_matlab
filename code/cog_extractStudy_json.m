@@ -206,7 +206,7 @@ end
             for m=1:length(metaData.meta)
 
 
-                fprintf("%d\n",m)
+           
 
                 this_data = metaData.meta(m).data;
 
