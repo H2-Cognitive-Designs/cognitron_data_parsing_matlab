@@ -200,6 +200,33 @@ end
                 'OutputVariableNames','meta'...
             );
 
+            % Run through the meta-data and pull out those rows that are in
+            % the new format where data is embedded inside data.
+
+            for m=1:length(metaData.meta)
+
+
+                fprintf("%d\n",m)
+
+                this_data = metaData.meta(m).data;
+
+                if isfield(this_data,"data")
+                    
+                    metaData.meta(m).user_id = metaData.meta(m).data.userstring;
+                    metaData.meta(m).DEVICEID = metaData.meta(m).data.DEVICEID;
+                    metaData.meta(m).salt = metaData.meta(m).data.salt;
+                    metaData.meta(m).data = jsondecode(metaData.meta(m).data.data);
+                else
+
+                    metaData.meta(m).salt = "";
+                    metaData.meta(m).DEVICEID = "";
+                end
+
+
+
+
+            end
+
             % --- Make a table of the data --- %
             vars = {...
                 'interview_uuid',...
@@ -210,6 +237,8 @@ end
                 'task_id',...
                 'user_id',...
                 'user_code',...
+                'salt',...
+                'DEVICEID',...
                 'data'...
             };
 
@@ -268,7 +297,7 @@ end
             %%% --- Process the tasks and questionnaires seperately --- %%%
             
 
-            for type = 0:1
+             for type = 0:1
 
                 if type == 0
 
@@ -1167,8 +1196,7 @@ for t=1:height(dirs)
 
     % If questionnaire, add back in the keyObj and try to convert the key
     if type == 1
-       
-
+        
         save(...
             fullfile(pathToMat,strcat(string(thisTask),'.mat')),...
             '-append',...
