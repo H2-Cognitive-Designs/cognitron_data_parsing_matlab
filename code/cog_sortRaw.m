@@ -192,12 +192,52 @@ for r=1:numRaw
            contains(task,'v_p_CFOG_TOL') || ...
            contains(task,'v_p_CFOG_manipulations2D') || ...
            contains(task,'v_p_CFOG_switchingStroop') || ...
-           strcmp(task,'v_p_switchingStroop')
+           strcmp(task,'v_p_switchingStroop') || ...
+           strcmp(task,'v_p_blocks')
             
             thisRows = thisRows(2:end);
             
         end
 
+        % Fix for the pt_prospectiveMemoryWords having category as a header
+        % but not in the actual data
+
+        if strcmp(task,'pt_prospectiveMemoryWords_1_immediate')
+            thisRows(1) = {strrep(thisRows{1},'	category','')};
+        end
+
+        % v_p_blocks is pretty messed up so lets try to rectify here
+        prev_main_row_ind = 1;
+        if strcmp(task,'v_p_blocks')
+
+            for rr=1:length(thisRows)
+
+                
+
+                if contains(thisRows{rr},"crateClicked")
+                    this_crate_row = thisRows{rr};
+                    crate_clicked = strrep(this_crate_row,"crateClicked = ","");
+                    
+                    if prev_main_row_ind == 1
+                        thisRows{rr-prev_main_row_ind} = strcat(thisRows{rr-prev_main_row_ind},"	","cratesClicked = ",crate_clicked);
+                    else
+                        thisRows{rr-prev_main_row_ind} = strcat(thisRows{rr-prev_main_row_ind},",",crate_clicked);
+                    end
+
+                    prev_main_row_ind = prev_main_row_ind + 1;
+
+                else
+
+                    prev_main_row_ind = 1;
+
+                end
+
+            end
+
+            thisRows(cellfun(@(x) contains(x,"crateClicked"),thisRows)) = [];
+
+
+        end
         
 
         %Social Learning is especially fucked so we have to massage it
