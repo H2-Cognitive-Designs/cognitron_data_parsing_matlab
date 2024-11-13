@@ -199,6 +199,22 @@ for r=1:numRaw
             
         end
 
+        if contains(task,'v_colourFrame')
+            if ~contains(thisRows{1},'correctResponse')
+                thisRows{1} = strrep(thisRows{1},'t\tr','t	r');
+                thisRows{1} = strrep( ...
+                    thisRows{1}, ...
+                    'score	correct	tcol', ...
+                    'score	correctResponse	tcol' ...
+                );
+                thisRows{1} = strrep( ...
+                    thisRows{1}, ...
+                    'trials	correct	nincorrect', ...
+                    'trials	ncorrect	nincorrect' ...
+                );
+            end
+        end
+
         % Fix for the pt_prospectiveMemoryWords having category as a header
         % but not in the actual data
 
@@ -295,8 +311,15 @@ for r=1:numRaw
                 
 
                 if length(tmpRow) == 1
-                    tmpRow = strsplit(thisRows{i},'\t');
+                    % tmpRow = strsplit(thisRows{i},'\t');
+                    tmpRow = regexp(thisRows{i},'\t','split');
                 end
+
+                if contains(task,'v_colourFrame') && length(tmpRow) == 16
+                    tmpRow = [tmpRow(1:8),{'???'},tmpRow(9:end)];
+                end
+
+
                     
                 thisRows{i} = tmpRow;
             end
@@ -307,7 +330,7 @@ for r=1:numRaw
                 thisRows{1}(12) = [];
             end
             
-            if strcmp(task,'BI_forager')
+            if strcmp(task,'BI_forager') || strcmp(task,'v_forager')
                if length(thisRows{1}) == 14
                    
                    thisRows{1}(14) = [];
@@ -338,6 +361,14 @@ for r=1:numRaw
                    thisRows{1}(15) = [];
                    
                end
+            elseif strcmp(task,'rs_switchingStroop')
+                for rr=1:length(thisRows)
+                    current_row = thisRows{rr};
+                    if isempty(current_row{end})
+                        current_row = current_row(1:end-1);
+                        thisRows{rr} = current_row;
+                    end
+                end
             end
 
             % More social learning massaging
@@ -725,6 +756,15 @@ for r=1:numRaw
 
                 end
 
+            elseif strcmp(task,'rs_switchingStroop')
+
+                if (length(thisRows{1}) == 12 && length(thisRows{2}) == 16)
+
+                    thisRows{1} = cat(2,thisRows{1},{'ltext','lfill','rtext','rfill'});
+
+                end
+                   
+
             end
 
 
@@ -776,6 +816,15 @@ for r=1:numRaw
             ];
             
         end
+
+        % Latin square task has two headers the same name, change the second 
+        % one to indicate it is the colour
+        if contains(task,'rs_latinSquare')
+
+            thisRawArr{1,13} = 'targetarray_colour';
+
+        end
+
     
         % Pop this raw data array into the contianer for all of them
         rawDataArr{r} = thisRawArr;
@@ -802,7 +851,7 @@ if checkCompliance
         'rs_featureMatching','respondedID';                      
         'rs_manipulations2D','Response';                      
         'rs_oddOneOut','response';
-        'rs_pictureCompletion','';                    
+        'rs_pictureCompletion','Button Selected';                    
         'rs_prospectiveMemoryObjects_1_delayed','responseGridIdx';   
         'rs_prospectiveMemoryObjects_1_immediate','responseGridIdx'; 
         'rs_prospectiveMemoryWords_1_delayed',{{'target','correct'},'logical(double(string($1))) & strcmp(string($2),"true")'};     
