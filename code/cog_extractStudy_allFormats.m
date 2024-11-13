@@ -218,6 +218,8 @@ getRid = {...
 };
 
 for s=1:length(paths)
+
+    
    
     thisData = load(...
         paths{s}...
@@ -257,7 +259,7 @@ for s=1:length(paths)
 %     the person didn't fail and a cell array if they did fail so write
 %     table freaks out.
     [~,taskID] = fileparts(paths{s});
-    if strcmp(taskID,'i4i_IDED')
+    if contains(taskID,'IDED')
         
         responseCatch = {};
         for i=1:height(thisData)
