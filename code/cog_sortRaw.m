@@ -417,7 +417,7 @@ for r=1:numRaw
                 % Make it skip the next processing step
                 type=2;
 
-            elseif strcmp(task,'rs_cardPairs') || strcmp(task,'ti_cardPairs')
+            elseif strcmp(task,'rs_cardPairs') || strcmp(task,'ti_cardPairs') || strcmp(task,'v_cardPairs')
                   if length(thisRows{1}) == 11
 
                       thisRows{1}(11) = [];
