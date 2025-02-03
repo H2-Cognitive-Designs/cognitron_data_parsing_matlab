@@ -218,9 +218,9 @@ for r=1:numRaw
         % Fix for the pt_prospectiveMemoryWords having category as a header
         % but not in the actual data
 
-        if strcmp(task,'pt_prospectiveMemoryWords_1_immediate')
-            thisRows(1) = {strrep(thisRows{1},'	category','')};
-        end
+        % if strcmp(task,'pt_prospectiveMemoryWords_1_immediate')
+        %     thisRows(1) = {strrep(thisRows{1},'	category','')};
+        % end
 
         % v_p_blocks is pretty messed up so lets try to rectify here
         prev_main_row_ind = 1;
