@@ -155,8 +155,13 @@ for t=1:length(taskIDs)
         taskPaths{t},...
         'startTime',...
         'user_id',...
+        'userID',...
         'Rawdata'...
     );
+
+    if ~strcmp(class(user_id),'categorical') && ~isa(user_id,"cell") && all(isnan(user_id))
+        user_id = userID;
+    end
 %     try
         [rawDataArr,focusArr,corrupted,nonCompliance] = cog_sortRaw(...
             Rawdata,...
@@ -176,28 +181,33 @@ for t=1:length(taskIDs)
 
 
         empty = cellfun(@(x) isempty(x),rawDataArr);
-        rawDataArr(empty) = [];
+        % rawDataArr(empty) = [];
     
         for r=1:length(rawDataArr)
+
+            if ~empty(r)
            
-            thisRaw = cell2table(...
-                rawDataArr{r}(2:end,:),...
-                'VariableNames',rawDataArr{r}(1,:)...
-            );
+                thisRaw = cell2table(...
+                    rawDataArr{r}(2:end,:),...
+                    'VariableNames',rawDataArr{r}(1,:)...
+                );
+
+            
         
-            writetable(...
-                thisRaw,...
-                fullfile(...
-                    thisRawDir,...
-                    strcat(...
-                        'raw_',...
-                        string(user_id(r)),...
-                        '_',...
-                        string(startTime(r)),...
-                        '.xlsx'...
+                writetable(...
+                    thisRaw,...
+                    fullfile(...
+                        thisRawDir,...
+                        strcat(...
+                            'raw_',...
+                            string(user_id(r)),...
+                            '_',...
+                            string(startTime(r)),...
+                            '.xlsx'...
+                        )...
                     )...
-                )...
-            );
+                );
+            end
             
         end
 %     catch
@@ -210,9 +220,6 @@ end
 %% Convert the .mat files to csv files
 
 getRid = {...
-    'os',...
-    'device',...
-    'browser',...
     'Rawdata',...
     'dynamicDifficulty'...
 };
@@ -253,6 +260,73 @@ for s=1:length(paths)
     
     
     thisData = struct2table(thisData);
+
+%   Sort out the os, device and browser fields
+
+    fields = {'os','device','browser'};
+
+    for f=1:length(fields)
+        n = height(thisData);
+        joinedStrings = strings(n, 1);
+
+        field_data = thisData{:,fields{f}};
+        
+        for i = 1:n
+            entry = field_data{i};
+
+            if (strcmp(fields{f},'os'))
+            
+                osName = entry{1};             % 'Mac OS X'
+                versionNums = entry{2};        % [10; 15]
+                versionStr = entry{3};         % '10.15'
+            
+                % Convert version numbers to a string
+                if numel(versionNums) == 2
+                    versionNumsStr = sprintf('%d.%d', versionNums(1), versionNums(2));
+                elseif isscalar(versionNums)
+                    versionNumsStr = sprintf('%d', versionNums);
+                else
+                    versionNumsStr = '';  % fallback in case of unexpected format
+                end
+            
+                % Join everything into a string
+                joinedStrings(i) = sprintf('%s;%s;%s', osName, versionNumsStr, versionStr);
+            elseif (strcmp(fields{f},'device'))
+
+                name = entry{1};             % 'Mac OS X'
+                manufacturer = entry{2};        % [10; 15]
+                version = entry{3};         % '10.15'
+            
+                % Join everything into a string
+                joinedStrings(i) = sprintf('%s;%s;%s', name, manufacturer, version);
+
+            elseif (strcmp(fields{f},'browser'))
+
+                name = entry{1};             % 'Mac OS X'
+                versionNums = entry{2};        % [10; 15]
+                versionStr = entry{3};         % '10.15'
+            
+                % Convert version numbers to a string
+                if numel(versionNums) == 2
+                    versionNumsStr = sprintf('%d.%d', versionNums(1), versionNums(2));
+                elseif isscalar(versionNums)
+                    versionNumsStr = sprintf('%d', versionNums);
+                else
+                    versionNumsStr = '';  % fallback in case of unexpected format
+                end
+            
+                % Join everything into a string
+                joinedStrings(i) = sprintf('%s;%s;%s', name, versionNumsStr, versionStr);
+
+
+            end
+        end
+    
+        % You can add it as a new column to the table
+        thisData(:,fields{f}) = cellstr(joinedStrings);
+    end
+    
+    
 
 
 %     Sort out the responses field for the csv of IDED (it is a double if

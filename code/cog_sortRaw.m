@@ -187,6 +187,7 @@ for r=1:numRaw
         % Sometimes we need to remove the first row which
         % contains the composite scores for some reason
         if contains(task,'rs_SART') || ...
+           contains(task,'i4i_SART') || ...
            contains(task,'pt_TOL') || ...
            contains(task,'pt_manipulations2D') || ...
            contains(task,'v_p_CFOG_TOL') || ...
@@ -527,7 +528,10 @@ for r=1:numRaw
 
                     thisRows(sizeMat == 10) = [];
 
-                    
+                elseif strcmp(task,'c3nl_mindInTheEyes')
+
+                    thisRows(1) = [];
+
                 end
 
 
@@ -615,8 +619,9 @@ for r=1:numRaw
 
                 sizeMat = cellfun(@(x) size(x,2),thisRows);
                 if sum(abs(diff(sizeMat)))==0
-
+                    not_all_same_size = false;
                 else
+                    not_all_same_size = true;
                     warning('Not all rows the same size');
                 end
 
@@ -629,6 +634,19 @@ for r=1:numRaw
                     'Time spent emotion',...
                     sprintf('RT')...
                 );
+
+            elseif contains(task,'prg_LFPQ')
+                if not_all_same_size
+
+                    for t=1:length(thisRows)
+
+                        if (length(thisRows{t}) == 15)
+                            thisRows{t} = [thisRows{t}(1),thisRows{t}(5:end)];
+                        end
+
+                    end
+
+                end
             elseif contains(task,'rs_mallasMemoryShort')
 
                 thisRows{1} = strrep(...
